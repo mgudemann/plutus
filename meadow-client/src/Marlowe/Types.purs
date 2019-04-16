@@ -43,8 +43,15 @@ derive newtype instance eqTimeout :: Eq Timeout
 derive newtype instance ordTimeout :: Ord Timeout
 derive instance newtypeTimeout :: Newtype Timeout _
 
-type Person
-  = BigInteger
+newtype Person
+  = Person BigInt
+
+instance showPerson :: Show Person where
+  show = toString <<< unwrap
+derive newtype instance prettyPerson :: Pretty Person
+derive newtype instance eqPerson :: Eq Person
+derive newtype instance ordPerson :: Ord Person
+derive instance newtypePerson :: Newtype Person _
 
 type Choice
   = BigInteger

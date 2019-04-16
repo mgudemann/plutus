@@ -13,7 +13,7 @@ import Data.BigInt as BigInt
 import Data.Foldable (class Foldable)
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty, foldl1, (:|))
-import Marlowe.Types (Timeout(Timeout), Contract(..), IdChoice, Observation(..), Value(..), BlockNumber(BlockNumber))
+import Marlowe.Types (Person(Person), Timeout(Timeout), Contract(..), IdChoice, Observation(..), Value(..), BlockNumber(BlockNumber))
 
 oneOf ::
   forall m a f.
@@ -35,10 +35,13 @@ genBlockNumber = BlockNumber <$> genBigInt
 genTimeout :: forall m. MonadGen m => MonadRec m => m Timeout
 genTimeout = (Timeout <<< BlockNumber) <$> genBigInt
 
+genPerson :: forall m. MonadGen m => MonadRec m => m Person
+genPerson = Person <$> genBigInt
+
 genIdChoice :: forall m. MonadGen m => MonadRec m => m IdChoice
 genIdChoice = do
   choice <- genBigInteger
-  person <- genBigInteger
+  person <- genPerson
   pure $ wrap { choice, person }
 
 genValue :: forall m. MonadGen m => MonadRec m => Lazy (m Value) => m Value
@@ -135,8 +138,8 @@ genContract' size
   | size > 1 = defer \_ ->
     let newSize = (size - 1)
     in oneOf $ pure Null :| [ Use <$> genBigInteger
-                            , Commit <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genTimeout <*> genTimeout <*> genContract' newSize <*> genContract' newSize
-                            , Pay <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , Commit <$> genBigInteger <*> genBigInteger <*> genPerson <*> genValue' newSize <*> genTimeout <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , Pay <$> genBigInteger <*> genBigInteger <*> genPerson <*> genValue' newSize <*> genTimeout <*> genContract' newSize <*> genContract' newSize
                             , Both <$> genContract' newSize <*> genContract' newSize
                             , Choice <$> genObservation <*> genContract' newSize <*> genContract' newSize
                             , When <$> genObservation <*> genTimeout <*> genContract' newSize <*> genContract' newSize
