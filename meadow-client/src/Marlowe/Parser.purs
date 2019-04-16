@@ -4,11 +4,13 @@ import Prelude
 
 import Control.Alternative ((<|>))
 import Data.BigInteger (BigInteger)
+import Data.BigInt (BigInt)
+import Data.BigInt as BigInt
 import Data.BigInteger as BigInteger
 import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
-import Marlowe.Types (BlockNumber, Choice, Contract(..), IdAction, IdChoice, IdCommit, IdOracle, LetLabel, Observation(..), Person, Timeout, Value(..))
+import Marlowe.Types (BlockNumber(BlockNumber), Choice, Contract(..), IdAction, IdChoice, IdCommit, IdOracle, LetLabel, Observation(..), Person, Timeout, Value(..))
 import Text.Parsing.Simple (Parser, char, fail, fix, integral, many, parens, some, string, whitespace)
 
 -- All arguments are space separated so we add **> to reduce boilerplate
@@ -38,6 +40,13 @@ bigInteger = do
       (Just v) -> pure v
       Nothing -> fail "not a valid BigInt"
 
+bigInt :: Parser String BigInt
+bigInt = do
+    i <- integral
+    case BigInt.fromString i of
+      (Just v) -> pure v
+      Nothing -> fail "not a valid BigInt"
+
 idChoice :: Parser String IdChoice
 idChoice = parens do
   void maybeSpaces 
@@ -53,7 +62,7 @@ choice :: Parser String Choice
 choice = bigInteger
 
 blockNumber :: Parser String BlockNumber
-blockNumber = bigInteger
+blockNumber = BlockNumber <$> bigInt
 
 timeout :: Parser String Timeout
 timeout = blockNumber

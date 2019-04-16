@@ -10,11 +10,10 @@ import Data.List (List(Nil, Cons), concat, foldl, foldr)
 import Data.Map as M
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Monoid (mempty)
-import Data.Newtype (class Newtype, unwrap)
+import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.Set as S
 import Data.Tuple (Tuple(..))
-import Marlowe.Parser (blockNumber, idChoice, idCommit)
-import Marlowe.Types (BlockNumber, Choice, Contract(Use, Let, Scale, While, When, Choice, Both, Pay, Commit, Null), ContractF(..), IdAction, IdChoice, IdCommit, IdOracle, LetLabel, Observation(..), ObservationF(..), Person, Timeout, Value(..), ValueF(..), WIdChoice(WIdChoice))
+import Marlowe.Types (BlockNumber, Choice, Contract(Use, Let, Scale, While, When, Choice, Both, Pay, Commit, Null), ContractF(..), IdAction, IdChoice, IdCommit, IdOracle, LetLabel, Observation, ObservationF(..), Person, Timeout, Value(..), ValueF(..), WIdChoice(WIdChoice))
 import Matryoshka (Algebra, cata)
 import Type.Data.Boolean (kind Boolean)
 
@@ -338,7 +337,7 @@ evalValue ::
 evalValue blockNumber state = cata algebra
   where
     algebra :: Algebra ValueF BigInteger
-    algebra CurrentBlockF = blockNumber
+    algebra CurrentBlockF = wrap $ unwrap blockNumber
     algebra (CommittedF idCommit) = getAvailableAmountInCommit idCommit state
     algebra (ConstantF value) = value
     algebra (NegValueF value) = -value

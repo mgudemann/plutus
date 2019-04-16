@@ -20,6 +20,7 @@ import Data.Either (Either(..))
 import Data.Foldable (foldrDefault)
 import Data.Function (flip)
 import Data.Functor.Coproduct (Coproduct)
+import Data.Integral (fromIntegral)
 import Data.Lens (assign, modifying, over, preview, set, use, view)
 import Data.List (List(..))
 import Data.Map (Map)
@@ -78,7 +79,7 @@ emptyMarloweState :: MarloweState
 emptyMarloweState = { input: emptyInputData
                     , transaction: emptyTransactionData
                     , state: emptyState
-                    , blockNum: (fromInt 0)
+                    , blockNum: fromIntegral 0
                     , moneyInContract: (fromInt 0)
                     , contract: Nothing
                     }
@@ -239,7 +240,7 @@ updateOracles cbn (State state) inputs omap =
              Just {blockNumber: bn, value}, Just {blockNumber: lbn} ->
                if (lbn >= cbn)
                then a
-               else Map.insert idOracle {blockNumber: max (lbn + fromInt 1) bn, value} a
+               else Map.insert idOracle {blockNumber: max (lbn + fromIntegral 1) bn, value} a
              Just {blockNumber, value}, Nothing ->
                Map.insert idOracle {blockNumber: min blockNumber cbn, value} a
              Nothing, Just {blockNumber, value} ->
@@ -474,7 +475,7 @@ evalF (ApplyTransaction next) = do
    Nothing -> pure next
 
 evalF (NextBlock next) = do
-  modifying (_marloweState <<< _blockNum) (\x -> x + ((fromInt 1) :: BigInteger))
+  modifying (_marloweState <<< _blockNum) (\x -> x + ((fromIntegral 1) :: BlockNumber))
   updateState
   pure next
 

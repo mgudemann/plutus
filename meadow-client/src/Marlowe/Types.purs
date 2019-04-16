@@ -2,18 +2,37 @@ module Marlowe.Types where
 
 import Prelude
 
+import Data.BigInt (BigInt, toString)
 import Data.BigInteger (BigInteger)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Newtype (class Newtype)
+import Data.Integral (class Integral)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Num (class Num)
+import Data.Real (class Real)
 import Data.String (joinWith)
 import Marlowe.Pretty (class Pretty, genericPretty)
-import Text.PrettyPrint.Leijen (text)
-import Matryoshka.Class.Recursive (class Recursive)
 import Matryoshka.Class.Corecursive (class Corecursive)
+import Matryoshka.Class.Recursive (class Recursive)
+import Text.PrettyPrint.Leijen (text)
 
-type BlockNumber
-  = BigInteger
+newtype BlockNumber
+  = BlockNumber BigInt
+
+derive instance genericBlockNumber :: Generic BlockNumber _
+derive instance newtypeBlockNumber :: Newtype BlockNumber _
+derive instance eqBlockNumber :: Eq BlockNumber
+derive instance ordBlockNumber :: Ord BlockNumber
+instance showBlockNumber :: Show BlockNumber where
+  show = toString <<< unwrap
+derive newtype instance prettyBlockNumber :: Pretty BlockNumber
+derive newtype instance integralBlockNumber :: Integral BlockNumber
+derive newtype instance numBlockNumber :: Num BlockNumber
+derive newtype instance semiringBlockNumber :: Semiring BlockNumber
+derive newtype instance ringBlockNumber :: Ring BlockNumber
+derive newtype instance euclideanRingBlock :: EuclideanRing BlockNumber
+derive newtype instance realRingBlock :: Real BlockNumber
+instance commutativeRingBlockNumber :: CommutativeRing BlockNumber
 
 type Timeout
   = BlockNumber
