@@ -34,8 +34,14 @@ derive newtype instance euclideanRingBlock :: EuclideanRing BlockNumber
 derive newtype instance realRingBlock :: Real BlockNumber
 instance commutativeRingBlockNumber :: CommutativeRing BlockNumber
 
-type Timeout
-  = BlockNumber
+newtype Timeout
+  = Timeout BlockNumber
+
+derive newtype instance showTimeout :: Show Timeout
+derive newtype instance prettyTimeout :: Pretty Timeout
+derive newtype instance eqTimeout :: Eq Timeout
+derive newtype instance ordTimeout :: Ord Timeout
+derive instance newtypeTimeout :: Newtype Timeout _
 
 type Person
   = BigInteger

@@ -13,7 +13,7 @@ import Data.BigInt as BigInt
 import Data.Foldable (class Foldable)
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty, foldl1, (:|))
-import Marlowe.Types (Contract(..), IdChoice, Observation(..), Value(..), BlockNumber(BlockNumber))
+import Marlowe.Types (Timeout(Timeout), Contract(..), IdChoice, Observation(..), Value(..), BlockNumber(BlockNumber))
 
 oneOf ::
   forall m a f.
@@ -31,6 +31,9 @@ genBigInt = BigInt.fromInt <$> chooseInt bottom top
 
 genBlockNumber :: forall m. MonadGen m => MonadRec m => m BlockNumber
 genBlockNumber = BlockNumber <$> genBigInt
+
+genTimeout :: forall m. MonadGen m => MonadRec m => m Timeout
+genTimeout = (Timeout <<< BlockNumber) <$> genBigInt
 
 genIdChoice :: forall m. MonadGen m => MonadRec m => m IdChoice
 genIdChoice = do
@@ -87,7 +90,7 @@ genObservation' size
   | size > 1 = defer \_ ->
     let newSize = (size - 1)
     in oneOf $ pure TrueObs :| [ pure FalseObs
-                               , BelowTimeout <$> genBlockNumber
+                               , BelowTimeout <$> genTimeout
                                , ChoseThis <$> genIdChoice <*> genBigInteger
                                , ChoseSomething <$> genIdChoice
                                , AndObs <$> genObservation' newSize <*> genObservation' newSize
@@ -104,7 +107,7 @@ genObservation' size
     genLeaf ::
       m Observation
     genLeaf = oneOf $ pure TrueObs :| [ pure FalseObs
-                                      , BelowTimeout <$> genBlockNumber
+                                      , BelowTimeout <$> genTimeout
                                       , ChoseThis <$> genIdChoice <*> genBigInteger
                                       , ChoseSomething <$> genIdChoice
                                       ]
@@ -132,12 +135,12 @@ genContract' size
   | size > 1 = defer \_ ->
     let newSize = (size - 1)
     in oneOf $ pure Null :| [ Use <$> genBigInteger
-                            , Commit <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genBlockNumber <*> genBlockNumber <*> genContract' newSize <*> genContract' newSize
-                            , Pay <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genBlockNumber <*> genContract' newSize <*> genContract' newSize
+                            , Commit <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genTimeout <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , Pay <$> genBigInteger <*> genBigInteger <*> genBigInteger <*> genValue' newSize <*> genTimeout <*> genContract' newSize <*> genContract' newSize
                             , Both <$> genContract' newSize <*> genContract' newSize
                             , Choice <$> genObservation <*> genContract' newSize <*> genContract' newSize
-                            , When <$> genObservation <*> genBlockNumber <*> genContract' newSize <*> genContract' newSize
-                            , While <$> genObservation <*> genBlockNumber <*> genContract' newSize <*> genContract' newSize
+                            , When <$> genObservation <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , While <$> genObservation <*> genTimeout <*> genContract' newSize <*> genContract' newSize
                             , Scale <$> genValue' newSize <*> genValue' newSize <*> genValue' newSize <*> genContract' newSize
                             , Let <$> genBigInteger <*> genContract' newSize <*> genContract' newSize
                             ]

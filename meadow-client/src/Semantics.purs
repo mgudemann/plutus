@@ -281,9 +281,9 @@ addAnyInput blockNumber (Input (IOracle idOracle timestamp value)) neededInputs 
 -- Decides whether something has expired
 isExpired ::
   BlockNumber ->
-  BlockNumber ->
+  Timeout ->
   Boolean
-isExpired currBlockNum expirationBlockNum = currBlockNum >= expirationBlockNum
+isExpired currBlockNum timeout = currBlockNum >= unwrap timeout
 
 -- Expire commits
 expireOneCommit ::
@@ -524,7 +524,7 @@ reduceRec blockNum state env (Scale divid divis def contract) = Scale (Constant 
   vsDivis = evalValue blockNum state divis
   vsDef = evalValue blockNum state def
 
-reduceRec blockNum state env (While obs timeout contractWhile contractAfter) = if isExpired blockNum timeout
+reduceRec blockNum state env (While obs timeout contractWhile contractAfter) = if isExpired blockNum timeout 
   then go contractAfter
   else if evalObservation blockNum state obs
     then (While obs timeout (go contractWhile) contractAfter)
