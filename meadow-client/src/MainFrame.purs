@@ -54,7 +54,7 @@ import Meadow (SPParams_, getOauthStatus, patchGistsByGistId, postGists, postCon
 import Network.HTTP.Affjax (AJAX)
 import Network.RemoteData (RemoteData(Success, NotAsked), _Success, isLoading, isSuccess)
 import Prelude (not, (||), type (~>), Unit, Void, bind, const, discard, id, pure, show, unit, void, ($), (+), (-), (<$>), (<<<), (<>), (==))
-import Semantics (ErrorResult(InvalidInput), IdInput(IdOracle, InputIdChoice), MApplicationResult(MCouldNotApply, MSuccessfullyApplied), State(State), TransactionOutcomes, applyTransaction, collectNeededInputsFromContract, emptyState, peopleFromStateAndContract, reduce, scoutPrimitives)
+import Semantics (ErrorResult(InvalidInput), IdInput(IdOracle, InputIdChoice), MApplicationResult(MCouldNotApply, MSuccessfullyApplied), State(State), TransactionOutcomes, applyTransaction, neededInputs, emptyState, peopleFromStateAndContract, reduce, scoutPrimitives)
 import Servant.PureScript.Settings (SPSettings_)
 import Simulation (simulationPane)
 import StaticData (bufferLocalStorageKey, marloweBufferLocalStorageKey)
@@ -251,13 +251,13 @@ updateOracles cbn (State state) inputs omap =
 updateActions :: MarloweState -> {state :: State, contract :: Contract, outcome :: TransactionOutcomes, validity :: TransactionValidity} -> MarloweState
 updateActions oldState {state, contract, outcome, validity} =
   set (_input <<< _inputs) (scoutPrimitives oldState.blockNum state contract)
-  (over (_input <<< _choiceData) (updateChoices state neededInputs)
-  (over (_input <<< _oracleData) (updateOracles oldState.blockNum state neededInputs)
+  (over (_input <<< _choiceData) (updateChoices state neededInputs')
+  (over (_input <<< _oracleData) (updateOracles oldState.blockNum state neededInputs')
   (set (_transaction <<< _outcomes) outcome
   (set (_transaction <<< _validity) validity
    oldState))))
   where
-    neededInputs = collectNeededInputsFromContract contract
+    neededInputs' = neededInputs contract
 
 simulateState :: MarloweState -> Maybe {state :: State, contract :: Contract, outcome :: TransactionOutcomes, validity :: TransactionValidity}
 simulateState state =
