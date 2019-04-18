@@ -56,8 +56,15 @@ derive instance newtypePerson :: Newtype Person _
 type Choice
   = BigInteger
 
-type IdAction
-  = BigInteger
+newtype IdAction
+  = IdAction BigInteger
+
+instance showIdAction :: Show IdAction where
+  show = show <<< unwrap
+derive newtype instance prettyIdAction :: Pretty IdAction
+derive newtype instance eqIdAction :: Eq IdAction
+derive newtype instance ordIdAction :: Ord IdAction
+derive instance newtypeIdAction :: Newtype IdAction _
 
 type IdCommit
   = BigInteger

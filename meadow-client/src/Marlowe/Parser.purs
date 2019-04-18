@@ -10,7 +10,7 @@ import Data.BigInteger as BigInteger
 import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
-import Marlowe.Types (BlockNumber(BlockNumber), Choice, Contract(..), IdAction, IdChoice, IdCommit, IdOracle, LetLabel, Observation(..), Person(Person), Timeout(Timeout), Value(..))
+import Marlowe.Types (BlockNumber(BlockNumber), Choice, Contract(..), IdAction(IdAction), IdChoice, IdCommit, IdOracle, LetLabel, Observation(..), Person(Person), Timeout(Timeout), Value(..))
 import Text.Parsing.Simple (Parser, char, fail, fix, integral, many, parens, some, string, whitespace)
 
 -- All arguments are space separated so we add **> to reduce boilerplate
@@ -77,7 +77,7 @@ idCommit :: Parser String IdCommit
 idCommit = bigInteger
 
 idAction :: Parser String IdAction
-idAction = bigInteger
+idAction = IdAction <$> bigInteger
 
 letLabel :: Parser String LetLabel
 letLabel = bigInteger
