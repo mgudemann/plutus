@@ -105,8 +105,15 @@ derive instance eqWIdChoice :: Eq WIdChoice
 
 derive instance ordWIdChoice :: Ord WIdChoice
 
-type IdOracle
-  = BigInteger
+newtype IdOracle
+  = IdOracle BigInteger
+
+instance showIdOracle :: Show IdOracle where
+  show = show <<< unwrap
+derive newtype instance prettyIdOracle :: Pretty IdOracle
+derive newtype instance eqIdOracle :: Eq IdOracle
+derive newtype instance ordIdOracle :: Ord IdOracle
+derive instance newtypeIdOracle :: Newtype IdOracle _
 
 type LetLabel
   = BigInteger

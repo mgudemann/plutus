@@ -13,7 +13,7 @@ import Data.BigInteger as BigInteger
 import Data.Foldable (class Foldable)
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty, foldl1, (:|))
-import Marlowe.Types (BlockNumber(BlockNumber), Contract(..), IdAction(..), IdChoice, IdCommit(..), Observation(..), Person(Person), Timeout(Timeout), Value(..))
+import Marlowe.Types (BlockNumber(BlockNumber), Contract(..), IdAction(..), IdChoice, IdCommit(..), IdOracle(IdOracle), Observation(..), Person(Person), Timeout(Timeout), Value(..))
 
 oneOf ::
   forall m a f.
@@ -44,6 +44,9 @@ genIdAction = IdAction <$> genBigInteger
 genIdCommit :: forall m. MonadGen m => MonadRec m => m IdCommit
 genIdCommit = IdCommit <$> genBigInteger
 
+genIdOracle :: forall m. MonadGen m => MonadRec m => m IdOracle
+genIdOracle = IdOracle <$> genBigInteger
+
 genIdChoice :: forall m. MonadGen m => MonadRec m => m IdChoice
 genIdChoice = do
   choice <- genBigInteger
@@ -72,7 +75,7 @@ genValue' size
                                     , DivValue <$> genValue' newSize <*> genValue' newSize <*> genValue' newSize
                                     , ModValue <$> genValue' newSize <*> genValue' newSize <*> genValue' newSize
                                     , ValueFromChoice <$> genIdChoice <*> genValue' newSize
-                                    , ValueFromOracle <$> genBigInteger <*> genValue' newSize
+                                    , ValueFromOracle <$> genIdOracle <*> genValue' newSize
                                     ]
   | otherwise = oneOf $ pure CurrentBlock :| [ Committed <$> genIdCommit
                                              , Constant <$> genBigInteger
