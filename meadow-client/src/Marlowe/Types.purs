@@ -66,8 +66,15 @@ derive newtype instance eqIdAction :: Eq IdAction
 derive newtype instance ordIdAction :: Ord IdAction
 derive instance newtypeIdAction :: Newtype IdAction _
 
-type IdCommit
-  = BigInteger
+newtype IdCommit
+  = IdCommit BigInteger
+
+instance showIdCommit :: Show IdCommit where
+  show = show <<< unwrap
+derive newtype instance prettyIdCommit :: Pretty IdCommit
+derive newtype instance eqIdCommit :: Eq IdCommit
+derive newtype instance ordIdCommit :: Ord IdCommit
+derive instance newtypeIdCommit :: Newtype IdCommit _
 
 newtype IdChoice
   = IdChoice {choice :: BigInteger, person :: Person}

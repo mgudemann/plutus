@@ -13,7 +13,7 @@ import Data.BigInteger as BigInteger
 import Data.Foldable (class Foldable)
 import Data.Newtype (wrap)
 import Data.NonEmpty (NonEmpty, foldl1, (:|))
-import Marlowe.Types (BlockNumber(BlockNumber), Contract(..), IdAction(..), IdChoice, Observation(..), Person(Person), Timeout(Timeout), Value(..))
+import Marlowe.Types (BlockNumber(BlockNumber), Contract(..), IdAction(..), IdChoice, IdCommit(..), Observation(..), Person(Person), Timeout(Timeout), Value(..))
 
 oneOf ::
   forall m a f.
@@ -41,6 +41,9 @@ genPerson = Person <$> genBigInt
 genIdAction :: forall m. MonadGen m => MonadRec m => m IdAction
 genIdAction = IdAction <$> genBigInteger
 
+genIdCommit :: forall m. MonadGen m => MonadRec m => m IdCommit
+genIdCommit = IdCommit <$> genBigInteger
+
 genIdChoice :: forall m. MonadGen m => MonadRec m => m IdChoice
 genIdChoice = do
   choice <- genBigInteger
@@ -60,7 +63,7 @@ genValue' ::
 genValue' size
   | size > 1 = defer \_ ->
     let newSize = (size - 1)
-    in oneOf $ pure CurrentBlock :| [ Committed <$> genBigInteger
+    in oneOf $ pure CurrentBlock :| [ Committed <$> genIdCommit
                                     , Constant <$> genBigInteger
                                     , NegValue <$> genValue' newSize
                                     , AddValue <$> genValue' newSize <*> genValue' newSize
@@ -71,7 +74,7 @@ genValue' size
                                     , ValueFromChoice <$> genIdChoice <*> genValue' newSize
                                     , ValueFromOracle <$> genBigInteger <*> genValue' newSize
                                     ]
-  | otherwise = oneOf $ pure CurrentBlock :| [ Committed <$> genBigInteger
+  | otherwise = oneOf $ pure CurrentBlock :| [ Committed <$> genIdCommit
                                              , Constant <$> genBigInteger
                                              ]
 
@@ -141,8 +144,8 @@ genContract' size
   | size > 1 = defer \_ ->
     let newSize = (size - 1)
     in oneOf $ pure Null :| [ Use <$> genBigInteger
-                            , Commit <$> genIdAction <*> genBigInteger <*> genPerson <*> genValue' newSize <*> genTimeout <*> genTimeout <*> genContract' newSize <*> genContract' newSize
-                            , Pay <$> genIdAction <*> genBigInteger <*> genPerson <*> genValue' newSize <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , Commit <$> genIdAction <*> genIdCommit <*> genPerson <*> genValue' newSize <*> genTimeout <*> genTimeout <*> genContract' newSize <*> genContract' newSize
+                            , Pay <$> genIdAction <*> genIdCommit <*> genPerson <*> genValue' newSize <*> genTimeout <*> genContract' newSize <*> genContract' newSize
                             , Both <$> genContract' newSize <*> genContract' newSize
                             , Choice <$> genObservation <*> genContract' newSize <*> genContract' newSize
                             , When <$> genObservation <*> genTimeout <*> genContract' newSize <*> genContract' newSize
